@@ -1,0 +1,15 @@
+[project]
+name = "bpla-platform"
+version = "1.0.0"
+description = "Flask каталог БПЛА с SQLite БД"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask>=3.0",
+]
+
+[tool.vercel]
+entrypoint = "run:app"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
