@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Карта полётов — БПЛА Платформа{% endblock %}
+{% block content %}
+<div class="section-head">
+  <h2>Карта зон полётов</h2>
+</div>
+<p class="lead">Зоны разрешённых и рекомендуемых полётов.</p>
+<div id="map" class="mapbox"></div>
+
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script>
+const map = L.map('map').setView([55.75, 37.62], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+const zones = [
+  {name:'Москва', lat:55.75, lon:37.62, r:50000},
+  {name:'СПб', lat:59.93, lon:30.31, r:40000},
+  {name:'Казань', lat:55.79, lon:49.12, r:30000},
+];
+zones.forEach(z => L.circle([z.lat,z.lon], {radius:z.r, color:'#0070d5', fillColor:'#0070d5', fillOpacity:0.12}).addTo(map).bindPopup(z.name));
+</script>
+{% endblock %}

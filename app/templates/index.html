@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}БПЛА Платформа — каталог беспилотных авиационных систем{% endblock %}
+{% block content %}
+<section class="hero">
+  <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=1400&q=80" alt="Drone hero" class="hero-img">
+  <div class="hero-overlay"></div>
+  <div class="hero-text">
+    <span class="eyebrow">Каталог БПЛА</span>
+    <h1>Беспилотные системы для решения любых задач</h1>
+    <p>Подбор беспилотников по характеристикам, сравнение моделей и расчёт полётных параметров.</p>
+    <div class="hero-actions">
+      <a class="btn" href="{{ url_for('main.drones') }}">Открыть каталог →</a>
+      <a class="btn ghost" href="{{ url_for('main.compare') }}">Сравнить модели</a>
+    </div>
+  </div>
+</section>
+
+<div class="metrics">
+  <div class="metric"><div class="num">{{ drones|length }}</div><div class="lbl">моделей в каталоге</div></div>
+  <div class="metric"><div class="num">100+</div><div class="lbl">км дальности</div></div>
+  <div class="metric"><div class="num">60</div><div class="lbl">мин в полёте</div></div>
+  <div class="metric"><div class="num">5000</div><div class="lbl">м потолка</div></div>
+</div>
+
+<div class="section-head">
+  <h2>Рекомендации пилотов</h2>
+</div>
+<div class="grid" id="featuredGrid">
+{% for d in drones if d.featured %}
+<div class="card drone-card" data-name="{{ d.name|lower }}" data-type="{{ d.type|lower }}" data-price="{{ d.price }}">
+  <div class="card-img">
+    <img src="{{ d.image }}" alt="{{ d.name }}" onerror="this.src='https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&q=80'">
+    <span class="featured-badge">Pilot's Pick</span>
+  </div>
+  <div class="card-body">
+    <div class="meta-chip"><span class="dot"></span>{{ d.type }}</div>
+    <h3><a href="{{ url_for('main.drone_detail', slug=d.slug) }}">{{ d.name }}</a></h3>
+    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
+      <div class="stars filled" title="{{ d.rating }}/5">{{ '★' * (d.rating|int) }}{% if d.rating % 5 != 0 %}☆{% endif %}</div>
+      <span style="font-size:12px;color:var(--muted)">{{ d.rating }} ({{ d.reviews }})</span>
+    </div>
+    <p>{{ d.description }}</p>
+    <div class="drone-meta">
+      <span class="meta-chip">{{ d.speed }} км/ч</span>
+      <span class="meta-chip">{{ d.range_km }} км</span>
+      <span class="meta-chip">{{ d.endurance_min }} мин</span>
+    </div>
+    <div class="price-row"><span class="price">{{ d.price }} ₽</span></div>
+    <div class="meta-row">
+      <span class="meta-item">⭐ {{ d.warranty }}</span>
+      <span class="meta-item">🚚 {{ d.shipping }}</span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <a class="btn small" href="{{ url_for('main.drone_detail', slug=d.slug) }}">Подробнее</a>
+      <button class="btn small btn-hangar" data-slug="{{ d.slug }}">В ангар</button>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+
+<div class="section-head">
+  <h2>Модели в каталоге</h2>
+  <a class="link" href="{{ url_for('main.drones') }}">Все модели →</a>
+</div>
+
+<div class="filters">
+  <input type="search" id="droneSearch" placeholder="Поиск по модели или типу…">
+  <select id="typeFilter"><option value="">Все типы</option></select>
+  <select id="priceFilter"><option value="">Любая цена</option><option value="0-150000">до 150 000 ₽</option><option value="150000-400000">150 000–400 000 ₽</option><option value="400000-">от 400 000 ₽</option></select>
+  <div class="sort-pill" id="sortPill">Сортировка: по умолчанию ▲</div>
+</div>
+
+<div class="grid" id="droneGrid">
+{% for d in drones %}
+<div class="card drone-card" data-name="{{ d.name|lower }}" data-type="{{ d.type|lower }}" data-price="{{ d.price }}">
+  <div class="card-img">
+    <img src="{{ d.image }}" alt="{{ d.name }}" onerror="this.src='https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&q=80'">
+    {% if d.featured %}<span class="featured-badge">Pilot's Pick</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="meta-chip"><span class="dot"></span>{{ d.type }}</div>
+    <h3><a href="{{ url_for('main.drone_detail', slug=d.slug) }}">{{ d.name }}</a></h3>
+    <p>{{ d.description }}</p>
+    <div class="drone-meta">
+      <span class="meta-chip">{{ d.speed }} км/ч</span>
+      <span class="meta-chip">{{ d.range_km }} км</span>
+      <span class="meta-chip">{{ d.endurance_min }} мин</span>
+    </div>
+    <div class="price-row"><span class="price">{{ d.price }} ₽</span></div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <a class="btn small" href="{{ url_for('main.drone_detail', slug=d.slug) }}">Подробнее</a>
+      <button class="btn small btn-hangar" data-slug="{{ d.slug }}">В ангар</button>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">🔍</div>
+  <h3>Ничего не найдено</h3>
+  <p>Попробуйте изменить поисковый запрос или фильтры.</p>
+  <a class="btn" href="{{ url_for('main.drones') }}">Сбросить фильтры</a>
+</div>
+{% endfor %}
+</div>
+
+<div class="section-head">
+  <h2>Отзывы пилотов</h2>
+</div>
+<div class="grid" style="max-width:900px">
+  <div class="card">
+    <div class="card-body">
+      <p style="font-style:italic;color:#475569;font-size:16px">"Летаю на Q-450 уже полгода — надёжный аппарат для аэрофотосъёмки. Батареи держат заявленное время."</p>
+      <div style="margin-top:12px;color:var(--muted);font-size:13px">— Алексей, оператор видеосъёмки</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <p style="font-style:italic;color:#475569;font-size:16px">"H-900 отлично справился с доставкой груза в сложной местности. Грузоподъёмность на уровне."</p>
+      <div style="margin-top:12px;color:var(--muted);font-size:13px">— Мария, логистика</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <p style="font-style:italic;color:#475569;font-size:16px">"FW-R пролетел 100 км на одной батарее. Дальность впечатляет для разведывательных миссий."</p>
+      <div style="margin-top:12px;color:var(--muted);font-size:13px">— Дмитрий, инспекция ЛЭП</div>
+    </div>
+  </div>
+</div>
+
+<div class="newsletter">
+  <h3>Подписка на обновления</h3>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Будем присылать новости о новых моделях и акциях.</p>
+  <div style="display:flex;gap:8px;max-width:400px;margin:0 auto">
+    <input type="email" placeholder="Ваш email" style="flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:10px;font-size:14px">
+    <button class="btn" style="padding:12px 24px;font-size:14px">Подписаться</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

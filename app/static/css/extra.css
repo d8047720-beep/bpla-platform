@@ -1,0 +1,4 @@
+.small-img { width:100%; height:140px; border-radius:12px; background:#0a1028; margin-bottom:8px; }
+.calc-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px; margin:16px 0; }
+.calc-grid label { display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:.9rem; }
+.calc-grid select,.calc-grid input { padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(5,8,22,.6);color:var(--text); }

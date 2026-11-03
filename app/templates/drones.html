@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Каталог дронов — БПЛА Платформа{% endblock %}
+{% block content %}
+<div class="section-head">
+  <h2>Все дроны</h2>
+</div>
+
+<div class="toolbar">
+  <input type="search" id="droneSearch" placeholder="Поиск по названию или типу…">
+  <select id="typeFilter"><option value="">Все типы</option></select>
+</div>
+
+<div class="grid" id="droneGrid">
+{% for d in drones %}
+<div class="card drone-card" data-name="{{ d.name|lower }}" data-type="{{ d.type|lower }}" data-price="{{ d.price }}" data-href="{{ url_for('main.drone_detail', slug=d.slug) }}">
+  <div class="card-img">
+    <img src="{{ d.image }}" alt="{{ d.name }}" onerror="this.src='https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&q=80'">
+    {% if d.featured %}<span class="featured-badge">Pilot's Pick</span>{% endif %}
+    {% if d.stock == 'in_stock' %}<span class="stock-badge stock-in">В наличии</span>
+    {% elif d.stock == 'pre_order' %}<span class="stock-badge stock-pre">Под заказ</span>
+    {% else %}<span class="stock-badge stock-out">Нет в наличии</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="meta-chip"><span class="dot"></span>{{ d.type }}</div>
+    <h3><a href="{{ url_for('main.drone_detail', slug=d.slug) }}">{{ d.name }}</a></h3>
+    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
+      <div class="stars filled" title="{{ d.rating }}/5">{{ '★' * (d.rating|int) }}{% if d.rating % 5 != 0 %}☆{% endif %}</div>
+      <span style="font-size:12px;color:var(--muted)">{{ d.rating }} ({{ d.reviews }})</span>
+    </div>
+    <p>{{ d.description }}</p>
+    <div class="drone-meta">
+      <span class="meta-chip">{{ d.speed }} км/ч</span>
+      <span class="meta-chip">{{ d.range_km }} км</span>
+      <span class="meta-chip">{{ d.endurance_min }} мин</span>
+    </div>
+    <div class="price-row"><span class="price">{{ d.price }} ₽</span></div>
+    <div class="meta-row">
+      <span class="meta-item">⭐ {{ d.warranty }}</span>
+      <span class="meta-item">🚚 {{ d.shipping }}</span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <a class="btn small" href="{{ url_for('main.drone_detail', slug=d.slug) }}">Подробнее</a>
+      <button class="btn small btn-hangar" data-slug="{{ d.slug }}">В ангар</button>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+
+<div class="recently-viewed" id="recentlyViewedSection" style="display:none">
+  <div class="section-head">
+    <h2>Недавно просмотренные</h2>
+  </div>
+  <div class="grid" id="recentlyViewedGrid"></div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const search = document.getElementById('droneSearch');
+  const typeFilter = document.getElementById('typeFilter');
+  const types = [...new Set(Array.from(document.querySelectorAll('.drone-card')).map(c => c.dataset.type))];
+  types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; typeFilter.appendChild(o); });
+  function filter() {
+    const q = (search.value || '').toLowerCase();
+    const t = typeFilter.value || '';
+    document.querySelectorAll('.drone-card').forEach(card => {
+      const match = (!q || card.dataset.name.includes(q) || card.dataset.type.includes(q)) && (!t || card.dataset.type === t);
+      card.style.display = match ? '' : 'none';
+    });
+  }
+  search.addEventListener('input', filter);
+  typeFilter.addEventListener('change', filter);
+})();
+
+// Add to Hangar
+document.querySelectorAll('.btn-hangar').forEach(btn => {
+  btn.addEventListener('click', function () {
+    const slug = this.dataset.slug;
+    let hangar = JSON.parse(localStorage.getItem('hangar') || '[]');
+    if (!hangar.includes(slug)) {
+      hangar.push(slug);
+      localStorage.setItem('hangar', JSON.stringify(hangar));
+      this.textContent = 'В ангаре';
+      this.classList.add('btn-hangar-added');
+    }
+    // Recently viewed
+    let viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    viewed = viewed.filter(s => s !== slug);
+    viewed.unshift(slug);
+    if (viewed.length > 6) viewed.pop();
+    localStorage.setItem('recentlyViewed', JSON.stringify(viewed));
+  });
+})();
+
+// Recently viewed section
+(function () {
+  const section = document.getElementById('recentlyViewedSection');
+  const grid = document.getElementById('recentlyViewedGrid');
+  if (!section || !grid) return;
+  const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+  if (!viewed.length) return;
+  section.style.display = 'block';
+  const cards = Array.from(document.querySelectorAll('.drone-card'));
+  const bySlug = {};
+  cards.forEach(c => { bySlug[c.dataset.slug] = c; });
+  grid.innerHTML = viewed.map(slug => {
+    const c = bySlug[slug];
+    if (!c) return '';
+    const img = c.querySelector('.card-img img').src;
+    const name = c.querySelector('h3').textContent;
+    const price = c.querySelector('.price').textContent;
+    return `<div class="card drone-card" data-href="${c.querySelector('a').getAttribute('href')}">
+      <div class="card-img"><img src="${img}" alt="${name}"></div>
+      <div class="card-body">
+        <h3><a href="${c.querySelector('a').getAttribute('href')}">${name}</a></h3>
+        <div class="price-row"><span class="price">${price}</span></div>
+        <button class="btn small btn-hangar" data-slug="${slug}">В ангар</button>
+      </div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.btn-hangar').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const slug = this.dataset.slug;
+      let hangar = JSON.parse(localStorage.getItem('hangar') || '[]');
+      if (!hangar.includes(slug)) {
+        hangar.push(slug);
+        localStorage.setItem('hangar', JSON.stringify(hangar));
+        this.textContent = 'В ангаре';
+        this.classList.add('btn-hangar-added');
+      }
+    });
+  });
+})();
+
+// Click on card cell -> detail page
+document.querySelectorAll('.drone-card').forEach(card => {
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('a, button')) return;
+    const href = card.dataset.href;
+    if (href) location.href = href;
+  });
+});
+</script>
+{% endblock %}

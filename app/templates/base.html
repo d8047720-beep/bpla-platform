@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}БПЛА Платформа{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block head_extra %}{% endblock %}
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="{{ url_for('main.index') }}" class="brand">БПЛА·Платформа</a>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('main.index') }}">Главная</a></li>
+      <li><a href="{{ url_for('main.drones') }}">Каталог</a></li>
+      <li><a href="{{ url_for('main.compare') }}">Сравнение</a></li>
+      <li><a href="{{ url_for('main.map_view') }}">Карта</a></li>
+    </ul>
+    <div class="nav-spacer"></div>
+  </div>
+</nav>
+<main class="container">
+{% block content %}{% endblock %}
+</main>
+<footer>© 2026 БПЛА Платформа · Информационная система каталога беспилотных летательных аппаратов</footer>
+<button class="back-to-top" id="backToTop" title="Наверх">↑</button>
+{% block scripts %}{% endblock %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

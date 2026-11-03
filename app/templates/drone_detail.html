@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{{ drone.name }} — БПЛА Платформа{% endblock %}
+{% block content %}
+<div style="margin-bottom:24px">
+  <a class="btn ghost small" href="{{ url_for('main.drones') }}">← Каталог</a>
+</div>
+<h1>{{ drone.name }}</h1>
+{% if drone.featured %}<span class="featured-badge" style="display:inline-block;margin-bottom:10px">Pilot's Pick</span>{% endif %}
+{% if drone.stock == 'in_stock' %}<span class="stock-badge stock-in">В наличии</span>
+{% elif drone.stock == 'pre_order' %}<span class="stock-badge stock-pre">Под заказ</span>
+{% else %}<span class="stock-badge stock-out">Нет в наличии</span>{% endif %}
+<p class="lead">{{ drone.type }}</p>
+
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px">
+  <div class="stars filled" title="{{ drone.rating }}/5">{{ '★' * (drone.rating|int) }}{% if drone.rating % 5 != 0 %}☆{% endif %}</div>
+  <span style="font-size:14px;color:var(--muted)">{{ drone.rating }} / 5 ({{ drone.reviews }} отзывов)</span>
+</div>
+
+<div class="detail-top">
+<div class="detail-visual" style="cursor:pointer" id="detailVisual">
+  <img src="{{ drone.image }}" alt="{{ drone.name }}" onerror="this.src='https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=800&q=80'">
+  <div class="zoom-hint">Увеличить фото</div>
+</div>
+  <div class="spec">
+    <ul>
+      <li><span>Скорость</span><strong>{{ drone.speed }} км/ч</strong></li>
+      <li><span>Дальность</span><strong>{{ drone.range_km }} км</strong></li>
+      <li><span>Время в воздухе</span><strong>{{ drone.endurance_min }} мин</strong></li>
+      <li><span>Грузоподъёмность</span><strong>{{ drone.payload_kg }} кг</strong></li>
+      <li><span>Потолок</span><strong>{{ drone.ceiling_m }} м</strong></li>
+    </ul>
+    <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
+      <div class="meta-row">
+        <span class="meta-item">💰 {{ drone.price }} ₽</span>
+        <span class="meta-item">⭐ Гарантия {{ drone.warranty }}</span>
+        <span class="meta-item">🚚 {{ drone.shipping }}</span>
+      </div>
+      <div style="margin-top:18px;display:flex;gap:12px">
+        <a class="btn small" href="{{ url_for('main.compare') }}">Сравнить с другими</a>
+        <button class="btn btn-hangar" data-slug="{{ drone.slug }}">В ангар</button>
+      </div>
+    </div>
+  </div>
+</div>
+<p style="color:#374151;font-size:17px;line-height:1.7;margin-bottom:24px">{{ drone.description }}</p>
+
+<div class="section-head" style="margin-top:56px">
+  <h2>Похожие модели</h2>
+</div>
+<div class="grid" id="relatedGrid"></div>
+
+<div class="recently-viewed" id="recentlyViewedSection" style="display:none">
+  <div class="section-head">
+    <h2>Недавно просмотренные</h2>
+  </div>
+  <div class="grid" id="recentlyViewedGrid"></div>
+</div>
+
+<div style="margin-top:40px;text-align:center"><a class="btn ghost" href="{{ url_for('main.drones') }}">← Назад к каталогу</a></div>
+
+<div class="sticky-hangar" id="stickyHangar" style="display:none">
+  <div class="sticky-info">
+    <div class="sticky-title" id="stickyTitle"></div>
+    <div class="sticky-price" id="stickyPrice"></div>
+  </div>
+  <button class="btn btn-hangar" id="stickyHangarBtn">В ангар</button>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+// Related models (same type)
+(function () {
+  const drones = {{ drones|tojson }};
+  const related = drones.filter(d => d.type === '{{ drone.type }}' && d.slug !== '{{ drone.slug }}');
+  const grid = document.getElementById('relatedGrid');
+  if (!grid || !related.length) return;
+  grid.innerHTML = related.map(d => `
+    <div class="card drone-card" data-href="/drones/${d.slug}">
+      <div class="card-img">
+        <img src="${d.image}" alt="${d.name}" onerror="this.src='https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&q=80'">
+        ${d.featured ? '<span class=\"featured-badge\">Pilot\'s Pick</span>' : ''}
+      </div>
+      <div class="card-body">
+        <div class="meta-chip"><span class="dot"></span>${d.type}</div>
+        <h3><a href="/drones/${d.slug}">${d.name}</a></h3>
+        <p>${d.description}</p>
+        <div class="price-row"><span class="price">${d.price} ₽</span></div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <a class="btn small" href="/drones/${d.slug}">Подробнее</a>
+          <button class="btn small btn-hangar" data-slug="${d.slug}">В ангар</button>
+        </div>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.btn-hangar').forEach(b => {
+    b.addEventListener('click', function () {
+      const slug = this.dataset.slug;
+      addToHangar(slug, this);
+    });
+  });
+})();
+
+// Recently viewed section
+(function () {
+  const section = document.getElementById('recentlyViewedSection');
+  const grid = document.getElementById('recentlyViewedGrid');
+  if (!section || !grid) return;
+  const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+  if (!viewed.length) return;
+  section.style.display = 'block';
+  const cards = Array.from(document.querySelectorAll('.drone-card'));
+  const bySlug = {};
+  cards.forEach(c => { bySlug[c.querySelector('.btn-hangar').dataset.slug] = c; });
+  grid.innerHTML = viewed.map(slug => {
+    const c = bySlug[slug];
+    if (!c) return '';
+    const img = c.querySelector('.card-img img').src;
+    const name = c.querySelector('h3').textContent;
+    const price = c.querySelector('.price').textContent;
+    return `<div class="card drone-card">
+      <div class="card-img"><img src="${img}" alt="${name}"></div>
+      <div class="card-body">
+        <h3><a href="${c.querySelector('a').getAttribute('href')}">${name}</a></h3>
+        <div class="price-row"><span class="price">${price}</span></div>
+        <button class="btn small btn-hangar" data-slug="${slug}">В анга́р</button>
+      </div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.btn-hangar').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const slug = this.dataset.slug;
+      addToHangar(slug, this);
+    });
+  });
+})();
+
+// Add to Hangar
+function addToHangar(slug, btn) {
+  let hangar = JSON.parse(localStorage.getItem('hangar') || '[]');
+  if (!hangar.includes(slug)) {
+    hangar.push(slug);
+    localStorage.setItem('hangar', JSON.stringify(hangar));
+    btn.textContent = 'В ангаре';
+    btn.classList.add('btn-hangar-added');
+  }
+  // Recently viewed
+  let viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+  viewed = viewed.filter(s => s !== slug);
+  viewed.unshift(slug);
+  if (viewed.length > 6) viewed.pop();
+  localStorage.setItem('recentlyViewed', JSON.stringify(viewed));
+}
+document.querySelectorAll('.btn-hangar').forEach(btn => {
+  btn.addEventListener('click', function () {
+    addToHangar(this.dataset.slug, this);
+  });
+});
+
+// Sticky hangar bar (mobile)
+(function () {
+  const bar = document.getElementById('stickyHangar');
+  const title = document.getElementById('stickyTitle');
+  const price = document.getElementById('stickyPrice');
+  const btn = document.getElementById('stickyHangarBtn');
+  if (!bar) return;
+  const name = '{{ drone.name }}';
+  const pr = '{{ drone.price }} ₽';
+  title.textContent = name;
+  price.textContent = pr;
+  btn.dataset.slug = '{{ drone.slug }}';
+  btn.addEventListener('click', () => addToHangar('{{ drone.slug }}', btn));
+  window.addEventListener('scroll', () => {
+    if (window.innerWidth <= 600) {
+      bar.classList.toggle('show', window.scrollY > 400);
+    } else {
+      bar.classList.remove('show');
+    }
+  });
+})();
+
+// Click on card cell -> detail page (detail page related cards)
+document.querySelectorAll('.drone-card[data-href]').forEach(card => {
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, input')) return;
+    const href = card.dataset.href;
+    if (href) location.href = href;
+  });
+});
+
+// Lightbox for main photo
+(function () {
+  const visual = document.getElementById('detailVisual');
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.innerHTML = '<button class="lightbox-close" aria-label="Закрыть">×</button><img src="" alt="">';
+  document.body.appendChild(box);
+  const img = box.querySelector('img');
+  const close = box.querySelector('.lightbox-close');
+  const open = () => { img.src = visual.querySelector('img').src; box.classList.add('open'); document.body.style.overflow = 'hidden'; };
+  const closeBox = () => { box.classList.remove('open'); document.body.style.overflow = ''; };
+  visual.addEventListener('click', open);
+  close.addEventListener('click', closeBox);
+  box.addEventListener('click', (e) => { if (e.target === box) closeBox(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeBox(); });
+})();
+</script>
+{% endblock %}

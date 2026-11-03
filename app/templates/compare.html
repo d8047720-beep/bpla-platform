@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Сравнение БПЛА — БПЛА Платформа{% endblock %}
+{% block content %}
+<div class="section-head">
+  <h2>Сравнение моделей</h2>
+</div>
+<p class="lead">Выберите до трёх дронов для параллельного сравнения характеристик.</p>
+
+<div class="grid" id="compareGrid">
+{% for d in drones %}
+<label class="card cmp-card drone-card" data-name="{{ d.name|lower }}" data-type="{{ d.type|lower }}" data-price="{{ d.price }}" data-href="{{ url_for('main.drone_detail', slug=d.slug) }}">
+  <input type="checkbox" class="cmp" data-slug="{{ d.slug }}">
+  <div class="card-img">
+    <img src="{{ d.image }}" alt="{{ d.name }}" onerror="this.src='https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&q=80'">
+    {% if d.featured %}<span class="featured-badge">Pilot's Pick</span>{% endif %}
+    {% if d.stock == 'in_stock' %}<span class="stock-badge stock-in">В наличии</span>
+    {% elif d.stock == 'pre_order' %}<span class="stock-badge stock-pre">Под заказ</span>
+    {% else %}<span class="stock-badge stock-out">Нет в наличии</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="meta-chip"><span class="dot"></span>{{ d.type }}</div>
+    <h3>{{ d.name }}</h3>
+    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
+      <div class="stars filled" title="{{ d.rating }}/5">{{ '★' * (d.rating|int) }}{% if d.rating % 5 != 0 %}☆{% endif %}</div>
+      <span style="font-size:12px;color:var(--muted)">{{ d.rating }} ({{ d.reviews }})</span>
+    </div>
+    <p>{{ d.type }} · {{ d.speed }} км/ч · {{ d.range_km }} км</p>
+    <div class="price-row"><span class="price">{{ d.price }} ₽</span></div>
+    <div class="meta-row">
+      <span class="meta-item">⭐ {{ d.warranty }}</span>
+      <span class="meta-item">🚚 {{ d.shipping }}</span>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <a class="btn small" href="{{ url_for('main.drone_detail', slug=d.slug) }}">Подробнее</a>
+      <button class="btn small btn-hangar" data-slug="{{ d.slug }}">В ангар</button>
+    </div>
+  </div>
+</label>
+{% endfor %}
+</div>
+
+<div id="compareResult" style="margin-top:40px"></div>
+
+<div style="margin-top:40px;text-align:center"><a class="btn ghost" href="{{ url_for('main.index') }}">← На главную</a></div>
+
+<div class="sticky-hangar" id="stickyHangar" style="display:none">
+  <div class="sticky-info">
+    <div class="sticky-title" id="stickyTitle"></div>
+    <div class="sticky-price" id="stickyPrice"></div>
+  </div>
+  <button class="btn btn-hangar" id="stickyHangarBtn">В ангар</button>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/compare.js') }}"></script>
+<script>
+// Add to Hangar
+function addToHangar(slug, btn) {
+  let hangar = JSON.parse(localStorage.getItem('hangar') || '[]');
+  if (!hangar.includes(slug)) {
+    hangar.push(slug);
+    localStorage.setItem('hangar', JSON.stringify(hangar));
+    btn.textContent = 'В ангаре';
+    btn.classList.add('btn-hangar-added');
+  }
+}
+document.querySelectorAll('.btn-hangar').forEach(btn => {
+  btn.addEventListener('click', function () {
+    addToHangar(this.dataset.slug, this);
+  });
+});
+
+// Sticky hangar bar (mobile)
+(function () {
+  const bar = document.getElementById('stickyHangar');
+  if (!bar) return;
+  const title = document.getElementById('stickyTitle');
+  const price = document.getElementById('stickyPrice');
+  const btn = document.getElementById('stickyHangarBtn');
+  const selected = Array.from(document.querySelectorAll('.cmp:checked')).map(i => i.dataset.slug);
+  if (selected.length) {
+    const slug = selected[0];
+    const card = document.querySelector('.cmp-card input[data-slug="' + slug + '"]').closest('.cmp-card');
+    if (card) {
+      title.textContent = card.querySelector('h3').textContent;
+      price.textContent = card.querySelector('.price').textContent;
+      btn.dataset.slug = slug;
+      bar.classList.add('show');
+    }
+  }
+  document.querySelectorAll('.cmp').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const sel = Array.from(document.querySelectorAll('.cmp:checked')).map(i => i.dataset.slug);
+      if (sel.length) {
+        const card = document.querySelector('.cmp-card input[data-slug="' + sel[0] + '"]').closest('.cmp-card');
+        title.textContent = card.querySelector('h3').textContent;
+        price.textContent = card.querySelector('.price').textContent;
+        btn.dataset.slug = sel[0];
+        bar.classList.add('show');
+      } else {
+        bar.classList.remove('show');
+      }
+    });
+  });
+  btn.addEventListener('click', () => addToHangar(btn.dataset.slug, btn));
+})();
+
+// Click on card cell -> detail page (compare)
+document.querySelectorAll('.cmp-card.drone-card').forEach(card => {
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, input')) return;
+    const href = card.dataset.href;
+    if (href) location.href = href;
+  });
+});
+</script>
+{% endblock %}

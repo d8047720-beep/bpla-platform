@@ -1,0 +1,170 @@
+{
+  "drones": [
+    {
+      "slug": "quad-450",
+      "name": "Квадрокоптер Q-450",
+      "type": "Мультикоптер",
+      "speed": 60,
+      "range_km": 8,
+      "endurance_min": 25,
+      "payload_kg": 1.5,
+      "ceiling_m": 500,
+      "description": "Лёгкий квадрокоптер для фото и видео съёмки.",
+      "image": "https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=600&q=80",
+      "price": 89000,
+      "featured": true,
+      "stock": "in_stock",
+      "rating": 4.6,
+      "reviews": 124,
+      "warranty": "12 мес",
+      "shipping": "Бесплатная доставка"
+    },
+    {
+      "slug": "hex-900",
+      "name": "Гексакоптер H-900",
+      "type": "Мультикоптер",
+      "speed": 50,
+      "range_km": 12,
+      "endurance_min": 35,
+      "payload_kg": 3.0,
+      "ceiling_m": 800,
+      "description": "Грузовой гексакоптер для доставки и инспекций.",
+      "image": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=600&q=80",
+      "price": 159000,
+      "featured": true,
+      "stock": "in_stock",
+      "rating": 4.8,
+      "reviews": 87,
+      "warranty": "24 мес",
+      "shipping": "Бесплатная доставка"
+    },
+    {
+      "slug": "fw-recon",
+      "name": "Разведчик FW-R",
+      "type": "Самолётный",
+      "speed": 180,
+      "range_km": 100,
+      "endurance_min": 90,
+      "payload_kg": 5.0,
+      "ceiling_m": 5000,
+      "description": "БПЛА самолётного типа для дальних разведывательных миссий.",
+      "image": "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=600&q=80",
+      "price": 340000,
+      "featured": false,
+      "stock": "pre_order",
+      "rating": 4.9,
+      "reviews": 43,
+      "warranty": "24 мес",
+      "shipping": "От 5 дней"
+    },
+    {
+      "slug": "hybrid-vt",
+      "name": "Гибрид VT-H",
+      "type": "Гибридный",
+      "speed": 140,
+      "range_km": 60,
+      "endurance_min": 75,
+      "payload_kg": 8.0,
+      "ceiling_m": 4000,
+      "description": "Вертикальный взлёт и горизонтальный полёт.",
+      "image": "https://images.unsplash.com/photo-1579829366248-204fe8413f31?w=600&q=80",
+      "price": 420000,
+      "featured": true,
+      "stock": "in_stock",
+      "rating": 4.7,
+      "reviews": 66,
+      "warranty": "24 мес",
+      "shipping": "Бесплатная доставка"
+    },
+    {
+      "slug": "heavy-lift",
+      "name": "Тяжёлый HL-1",
+      "type": "Вертолётный",
+      "speed": 90,
+      "range_km": 40,
+      "endurance_min": 50,
+      "payload_kg": 25.0,
+      "ceiling_m": 3000,
+      "description": "Тяжёлый вертолётный БПЛА для грузоперевозок.",
+      "image": "https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?w=600&q=80",
+      "price": 680000,
+      "featured": false,
+      "stock": "out_of_stock",
+      "rating": 4.5,
+      "reviews": 29,
+      "warranty": "12 мес",
+      "shipping": "Под заказ"
+    },
+    {
+      "slug": "strato",
+      "name": "Стратосферный S-1",
+      "type": "Стратосферный",
+      "speed": 120,
+      "range_km": 500,
+      "endurance_min": 1440,
+      "payload_kg": 2.0,
+      "ceiling_m": 20000,
+      "description": "Высотный аппарат для длительного наблюдения.",
+      "image": "https://images.unsplash.com/photo-1559628233-8e6f3a8f8e3d?w=600&q=80",
+      "price": 1200000,
+      "featured": false,
+      "stock": "in_stock",
+      "rating": 4.9,
+      "reviews": 18,
+      "warranty": "36 мес",
+      "shipping": "От 10 дней"
+    }
+  ],
+  "applications": [
+    {
+      "slug": "photo",
+      "title": "Аэрофотосъёмка",
+      "summary": "Картография, 3D-моделирование, мониторинг территорий.",
+      "icon": "📸"
+    },
+    {
+      "slug": "agro",
+      "title": "Сельское хозяйство",
+      "summary": "Опрыскивание полей, оценка посевов, точное земледелие.",
+      "icon": "🌾"
+    },
+    {
+      "slug": "sar",
+      "title": "Поисково-спасательные",
+      "summary": "Обнаружение людей, доставка грузов в труднодоступные места.",
+      "icon": "🆘"
+    },
+    {
+      "slug": "inspect",
+      "title": "Инспекция",
+      "summary": "ЛЭП, трубопроводы, здания и сооружения.",
+      "icon": "🔍"
+    },
+    {
+      "slug": "delivery",
+      "title": "Доставка",
+      "summary": "Логистика последней мили, медицинские грузы.",
+      "icon": "📦"
+    },
+    {
+      "slug": "security",
+      "title": "Безопасность",
+      "summary": "Мониторинг границ, охрана объектов, разведка.",
+      "icon": "🛡️"
+    }
+  ],
+  "news": [
+    {
+      "title": "Новый рекорд дальности полёта",
+      "body": "БПЛА самолётного типа преодолел 150 км без посадки."
+    },
+    {
+      "title": "Рои дронов в сельском хозяйстве",
+      "body": "Испытания координированной группы из 12 аппаратов завершены успешно."
+    },
+    {
+      "title": "Регулирование полётов обновлено",
+      "body": "Введены новые правила для коммерческих операторов."
+    }
+  ]
+}
